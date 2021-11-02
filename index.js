@@ -68,6 +68,9 @@ var listener = app.listen(process.env.PORT, function() {
                         text: '/cekabsen',
                         callback_data: '/cekabsen'
                     }, {
+                        text: '/cekupdown',
+                        callback_data: '/cekupdown'
+                    }, {
                         text: '/intro',
                         callback_data: '/intro'
                     }
@@ -100,32 +103,51 @@ var listener = app.listen(process.env.PORT, function() {
     });
 
     bot.onText(/\/cekupdown/, (msg) => {
-        bot.sendMessage(msg.chat.id, "Mengecek...");
-        absensi(msg.chat.id);
-    });
+        const array = [
+            "https://divos.denpasarkota.go.id/",
+            "https://sipapa.denpasarkota.go.id",
+            "https://pusatdata.denpasarkota.go.id",
+            "https://sidok.denpasarkota.go.id",
+            "https://bankdata.denpasarkota.go.id",
+            "https://ppid.denpasarkota.go.id",
+            "https://simonev.denpasarkota.go.id",
+            "https://smartcity.denpasarkota.go.id",
+            "https://diaspora.denpasarkota.go.id",
+            "https://perpustakaan.denpasarkota.go.id/",
+            "http://rujukanonline.denpasarkota.go.id/",
+        ]
 
-    
+        bot.sendMessage(msg.chat.id, "Mengecek " + array.length + " Website...");
+        cekUpDown(msg.chat.id, array);
+    });
 
     // ------------------------------------------------
     // fungsi-fungsi
 
-    function checkWebsite(url) {
-        return new Promise((resolve, reject) => {
-        https
-            .get(url, function(res) {
-            console.log(url, res.statusCode);
-            resolve(res.statusCode === 200);
-            })
-            .on("error", function(e) {
-            resolve(false);
-            });     
-        })
-    }
-    async function cekUpDown(){
-        var check = await checkWebsite("https://stackoverflow.com/");
-        console.log(check); //true
-    }
+    // function checkWebsite(url) {
+    const checkWebsite = async url => await new Promise((resolve, reject) => {
+        request(url, function(error, response, body) {
+            // resolve({site: url, status: (!error && response.statusCode == 200) ? "UP": "DOWN: " + error.message});
+            resolve({site: url, status: (!error && response.statusCode == 200) ? "[Normal \u{1F197}]": "[Down \u{26D4}]\n\u{2139} " + error.message});
+        });
+    });
 
+    const cekUpDown = async (msg, urlWeb) => {
+        let i = 0
+        var data = "" 
+
+        while (i < urlWeb.length) {
+            data += await checkWebsite(urlWeb[i]).then(function(result) {
+                return result.site+"\n"+result.status+ "\n\n"
+                // bot.sendMessage(msg, result.site+" -> "+result.status);
+            });
+            i++
+        }
+
+        bot.sendMessage(msg, data);
+        // bot.sendMessage(msg, urlWeb.length + " Website telah dicek");
+
+    }
 
     // fungsi cw
     const cekWeb = async function(msg, web) {
@@ -135,7 +157,7 @@ var listener = app.listen(process.env.PORT, function() {
                     '--no-sandbox',
                     '--disable-setuid-sandbox'
                 ],
-                timeout: 0,
+                timeout: 10000,
             });
             const page = await browser.newPage();
         
@@ -156,6 +178,8 @@ var listener = app.listen(process.env.PORT, function() {
             bot.sendPhoto(msg, "example.png"); 
         } catch (err) {
             // error
+            bot.sendPhoto(msg, "Web tidak dapat diakses.");
+            // console.log(err)
         }
     }
 
