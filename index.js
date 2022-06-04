@@ -81,9 +81,27 @@ var listener = app.listen(process.env.PORT, function() {
         });
     });
 
-    bot.onText(/\/cekabsen/, (msg) => {
+    bot.onText(/\/cekabsen/, (msg, match) => {
+        
+
+        const chatId = msg.chat.id;
+        const pass = match.input.split(' ')[1];
+        
+        if (pass === undefined) {
+            bot.sendMessage(
+                chatId,
+                'Untuk mengabsen, silahkan ketik format seperti contoh: /cekabsen password',
+            );
+            return;
+        } else {
+            bot.sendMessage(msg.chat.id, "Mengecek...");
+            absensi(msg.chat.id, pass);
+        }
+    });
+
+    bot.onText(/\/cekcovid/, (msg) => {
         bot.sendMessage(msg.chat.id, "Mengecek...");
-        absensi(msg.chat.id);
+        cekCovid(msg.chat.id);
     });
 
     bot.onText(/\/cekweb/, (msg, match) => {
@@ -105,7 +123,6 @@ var listener = app.listen(process.env.PORT, function() {
     bot.onText(/\/cekupdown/, (msg) => {
         const array = [
             "https://divos.denpasarkota.go.id/",
-            "https://sipapa.denpasarkota.go.id",
             "https://pusatdata.denpasarkota.go.id",
             "https://sidok.denpasarkota.go.id",
             "https://bankdata.denpasarkota.go.id",
@@ -113,8 +130,10 @@ var listener = app.listen(process.env.PORT, function() {
             "https://simonev.denpasarkota.go.id",
             "https://smartcity.denpasarkota.go.id",
             "https://diaspora.denpasarkota.go.id",
-            "https://perpustakaan.denpasarkota.go.id/",
+            "https://widyasastra.denpasarkota.go.id/",
             "http://rujukanonline.denpasarkota.go.id/",
+            "https://sipapa.denpasarkota.go.id/",
+            "https://sijuna.denpasarkota.go.id/",
         ]
 
         bot.sendMessage(msg.chat.id, "Mengecek " + array.length + " Website...");
@@ -171,6 +190,7 @@ var listener = app.listen(process.env.PORT, function() {
 
             await page.waitFor(500);
             await page.screenshot({ path: 'example.png', fullPage: true });
+            
         
             await browser.close();
             // await bot.sendMessage('-1001242131071', 'Absensi sudah dilakukan!');
@@ -183,7 +203,7 @@ var listener = app.listen(process.env.PORT, function() {
         }
     }
 
-    const absensi = async function(msg) {
+    const absensi = async function(msg, pass) {
         try {
             const browser = await puppeteer.launch({
                 args: [
@@ -203,11 +223,12 @@ var listener = app.listen(process.env.PORT, function() {
             await page.waitForSelector('input[name=userid]');
         
             await page.$eval('input[name=userid]', el => el.value = '0308011996225');
-            await page.$eval('input[name=passwd]', el => el.value = 'dps12345');
+            await page.$eval('input[name=passwd]', el => el.value = '223482');
             await page.click('.btn.btn-primary');
         
             // absen
-            await page.waitForSelector('.btnku', {"waitUntil" : "networkidle2"});
+            // await page.waitForSelector('.btnku', {"waitUntil" : "networkidle2"});
+            await page.waitForSelector('.btn-primary', {"waitUntil" : "networkidle2"});
             //await page.click('.btnku');
             await page.waitFor(500);
         
@@ -219,6 +240,101 @@ var listener = app.listen(process.env.PORT, function() {
             bot.sendPhoto(msg, "example.png"); 
         } catch (err) {
             // error
+            console.log(err);
+            bot.sendMessage(msg, 'Terdapat masalah saat pengecekan!'); 
+            
         }
+    }
+
+    const cekCovid = async function(msg) {
+        try {
+            const browser = await puppeteer.launch({
+                headless: true,
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--start-maximized',
+                ],
+                defaultViewport: null,
+                timeout: 1000,
+            });
+            const page = await browser.newPage();
+        
+            // override permission location	
+            const context = browser.defaultBrowserContext()
+            // await context.overridePermissions("https://allrecord-tc19.kemkes.go.id", ['geolocation'])
+            // await page.setGeolocation({latitude: parseFloat(-8.654291), longitude: parseFloat(115.227906)})
+        
+            // await page.goto('https://allrecord-tc19.kemkes.go.id');
+            // await page.waitForSelector('input[name=user]');
+        
+            // await page.$eval('input[name=user]', el => el.value = '51004');
+            // await page.$eval('input[name=pass]', el => el.value = 'buahdelima');
+            // await page.click('.login100-form-btn');
+
+            // navigasi ke halaman
+            // await page.goto('https://allrecord-tc19.kemkes.go.id/KasusRilis');
+
+            await page.goto('https://www.w3schools.com/html/html_tables.asp');
+            // await page.waitForSelector('.sidebar-left', {"waitUntil" : "networkidle2"});
+            await page.waitFor(500);
+
+            // await page.click('.btn.btn-info');
+            // nunggu lagi
+            // await page.waitForSelector('.sidebar-left', {"waitUntil" : "networkidle2"});
+            // await page.waitFor(500);
+
+            await selectPresetNamed();
+        
+            await page.screenshot({ path: 'example.png', fullPage: true });
+        
+            await browser.close();
+            // await bot.sendMessage('-1001242131071', 'Absensi sudah dilakukan!');
+            // Sending the photo
+            bot.sendPhoto(msg, "example.png"); 
+        } catch (err) {
+            // error
+        }
+    }
+
+    // get tabel
+    async function selectPresetNamed() {
+        const tableRows = 'tbody tr'
+        const arrayStr = []
+
+        const rowCount = await this.page.$eval(tableRows, (e) => e.length)
+    
+        console.log('langkah awal')
+        // At least 1 row exists in table body
+        if (rowCount == 0) {
+            browser.close()
+            throw new Error(`no elements found with locator, '${tableRows}'`)
+        }else{
+            console.log('aneh!')
+        }
+        console.log('mauu!')
+        // str1
+        const str1 = await this.page.$eval(
+            `${tableRows}:nth-child(1) td:nth-child(4)`,
+            (e) => e.innerText
+        )
+        console.log('datanya: '+str1)
+
+        // arrayStr.push(str1);
+        // // str2
+        // const str2 = await this.page.$eval(
+        //     `${tableRows}:nth-child(1) td:nth-child(7)`,
+        //     (e) => e.innerText
+        // )
+        // arrayStr.push(str2);
+        // // str3
+        // const str3 = await this.page.$eval(
+        //     `${tableRows}:nth-child(1) td:nth-child(10)`,
+        //     (e) => e.innerText
+        // )
+        // arrayStr.push(str3);
+
+        // console.log(arrayStr);
+
     }
 });
