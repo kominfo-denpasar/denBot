@@ -13,6 +13,9 @@ var app = express();
 const token = process.env.TOKEN;
 const bot = new tBot(token, {polling: true});
 
+// cron node
+const cron = require('node-cron');
+
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -48,6 +51,18 @@ app.get('/test', (req, res) => {
 
 var listener = app.listen(process.env.PORT, function() {
     console.log('Your app is listening on port ' + listener.address().port);
+
+    // Schedule tasks to be run on the server.
+    cron.schedule('30 6,15 * * 1-5', function() {
+        const chat_id = 185257908;
+        try {
+            // console.log('running...');
+            absensi(chat_id);
+        } catch (err) {
+            bot.sendMessage(chat_id, 'Terjadi kesalahan pada cronjob!');
+            console.log('error => ', err)
+        }
+    });
 
     // intro
     bot.onText(/\/intro/, (msg) => {
@@ -85,18 +100,10 @@ var listener = app.listen(process.env.PORT, function() {
         
 
         const chatId = msg.chat.id;
-        const pass = match.input.split(' ')[1];
+        // const pass = match.input.split(' ')[1];
+        bot.sendMessage(msg.chat.id, "Mengecek...");
+        absensi(msg.chat.id);
         
-        if (pass === undefined) {
-            bot.sendMessage(
-                chatId,
-                'Untuk mengabsen, silahkan ketik format seperti contoh: /cekabsen password',
-            );
-            return;
-        } else {
-            bot.sendMessage(msg.chat.id, "Mengecek...");
-            absensi(msg.chat.id, pass);
-        }
     });
 
     bot.onText(/\/cekcovid/, (msg) => {
@@ -203,7 +210,7 @@ var listener = app.listen(process.env.PORT, function() {
         }
     }
 
-    const absensi = async function(msg, pass) {
+    const absensi = async function(msg) {
         try {
             const browser = await puppeteer.launch({
                 args: [
@@ -237,7 +244,8 @@ var listener = app.listen(process.env.PORT, function() {
             await browser.close();
             // await bot.sendMessage('-1001242131071', 'Absensi sudah dilakukan!');
             // Sending the photo
-            bot.sendPhoto(msg, "example.png"); 
+            bot.sendPhoto(msg, "example.png");
+            bot.sendMessage(msg, 'Absen telah dilakukan!');
         } catch (err) {
             // error
             console.log(err);
