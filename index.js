@@ -55,7 +55,7 @@ var listener = app.listen(process.env.PORT, function() {
     // Schedule tasks to be run on the server.
     cron.schedule('50 6,15 * * 1-5', function() {
         const chat_id = 185257908;
-        bot.sendMessage(msg.chat.id, "Mengecek absen...");
+        bot.sendMessage(chat.id, "Mengecek absen...");
         try {
             // console.log('running...');
             absensi(chat_id);
@@ -237,8 +237,9 @@ var listener = app.listen(process.env.PORT, function() {
             // absen
             await page.waitForSelector('.btnku', {"waitUntil" : "networkidle2"});
             // await page.waitForSelector('.btn-primary', {"waitUntil" : "networkidle2"});
-            await page.click('.btnku');
             await page.waitFor(500);
+            await page.click('.btnku');
+            await page.waitFor(10);
         
             await page.screenshot({ path: 'example.png', fullPage: true });
         
