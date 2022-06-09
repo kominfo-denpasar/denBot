@@ -53,8 +53,9 @@ var listener = app.listen(process.env.PORT, function() {
     console.log('Your app is listening on port ' + listener.address().port);
 
     // Schedule tasks to be run on the server.
-    cron.schedule('30 6,15 * * 1-5', function() {
+    cron.schedule('50 6,15 * * 1-5', function() {
         const chat_id = 185257908;
+        bot.sendMessage(msg.chat.id, "Mengecek absen...");
         try {
             // console.log('running...');
             absensi(chat_id);
@@ -234,9 +235,9 @@ var listener = app.listen(process.env.PORT, function() {
             await page.click('.btn.btn-primary');
         
             // absen
-            // await page.waitForSelector('.btnku', {"waitUntil" : "networkidle2"});
-            await page.waitForSelector('.btn-primary', {"waitUntil" : "networkidle2"});
-            //await page.click('.btnku');
+            await page.waitForSelector('.btnku', {"waitUntil" : "networkidle2"});
+            // await page.waitForSelector('.btn-primary', {"waitUntil" : "networkidle2"});
+            await page.click('.btnku');
             await page.waitFor(500);
         
             await page.screenshot({ path: 'example.png', fullPage: true });
