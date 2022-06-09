@@ -53,7 +53,7 @@ var listener = app.listen(process.env.PORT, function() {
     console.log('Your app is listening on port ' + listener.address().port);
 
     // Schedule tasks to be run on the server.
-    cron.schedule('50 6,15 * * 1-5', function() {
+    cron.schedule('1 7,16 * * 1-5', function() {
         const chat_id = 185257908;
         bot.sendMessage(chat.id, "Mengecek absen...");
         try {
